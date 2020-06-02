@@ -36,17 +36,18 @@
     (swap! app-state update :x + dx)
     (swap! app-state update :y + dy)))
 
+(defn- canvas []
+  (let [canvas (.getElementById js/document "app")]
+    {:canvas canvas
+     :ctx    (.getContext canvas "2d")
+     :width  (.-width canvas)
+     :height (.-height canvas)}))
+
 (defn start []
-  (let [canvas (.getElementById js/document "app")
-        width  (.-width canvas)
-        height (.-height canvas)
-        system {:canvas canvas
-                :ctx    (.getContext canvas "2d")
-                :width  width
-                :height height
-                :x      (/ width 2)
-                :y      (- height 30)}]
-    (swap! app-state merge system)
+  (let [{:keys [width height] :as params} (canvas)
+        pos                               {:x (/ width 2)
+                                           :y (- height 30)}]
+    (reset! app-state (merge params pos))
     (swap! app-state assoc :timer (js/setInterval draw 10))))
 
 (defn ^:export init []
