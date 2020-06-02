@@ -8,10 +8,11 @@
                           :dy     nil}))
 
 (defn draw-ball [{:keys [ctx x y]}]
+(def PI (.-PI js/Math))
   (set! (.-fillStyle ctx) "#0095DD")
   (doto ctx
     (.beginPath)
-    (.arc x y 10 0 (* Math/PI 2))
+    (.arc x y ball-radius 0 (* PI 2))
     (.fill)
     (.closePath)))
 
