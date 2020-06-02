@@ -34,7 +34,7 @@
                 :dx     2
                 :dy     -2}]
     (swap! app-state merge system)
-    (js/setInterval #(draw app-state) 10)))
+    (swap! app-state assoc :timer (js/setInterval draw 10))))
 
 (defn ^:export init []
   ;; init is called ONCE when the page loads
@@ -45,4 +45,5 @@
 (defn stop []
   ;; stop is called before any code is reloaded
   ;; this is controlled by :before-load in the config
-  (js/console.log "stop"))
+  (js/console.log "stop")
+  (js/clearInterval (:timer @app-state)))
