@@ -15,18 +15,24 @@
     (.fill)
     (.closePath)))
 
-(defn out-of-border? [ball-radius x dx border]
-  (or (> (+ x dx) (- border ball-radius))
-      (< (+ x dx) ball-radius)))
+(defn- out-of-border? [ball-radius pos direction border]
+  (or (> (+ pos direction) (- border ball-radius))
+      (< (+ pos direction) ball-radius)))
+
+(let [kmap {:dx [:ball-radius :x :dx :width]
+            :dy [:ball-radius :y :dy :height]}]
+  (defn- bound [ks]
+    (doseq [k ks]
+      (let [params (map (partial get @app-state) (k kmap))]
+        (when (apply out-of-border? params)
+          (swap! app-state update k -))))))
 
 (defn draw []
-  (let [{:keys [ctx x y dx dy width height ball-radius]} @app-state]
+  (let [{:keys [ctx dx dy width height]} @app-state]
     (.clearRect ctx 0 0 width height)
     (draw-ball @app-state)
 
-    (cond
-      (out-of-border? ball-radius x dx width)  (swap! app-state update :dx -)
-      (out-of-border? ball-radius y dy height) (swap! app-state update :dy -))
+    (bound [:dx :dy])
 
     (swap! app-state update :x + dx)
     (swap! app-state update :y + dy)))
