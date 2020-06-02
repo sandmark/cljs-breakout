@@ -1,18 +1,39 @@
-(ns cave.core
-  (:require [reagent.core :as reagent :refer [atom]]))
+(ns cave.core)
 
-;; define your app data so that it doesn't get over-written on reload
+(defonce app-state (atom {:canvas nil
+                          :ctx    nil
+                          :x      nil
+                          :y      nil
+                          :dx     nil
+                          :dy     nil}))
 
-(defonce app-state (atom {:text "Hello world!"}))
+(defn draw-ball [{:keys [ctx x y]}]
+  (set! (.-fillStyle ctx) "#0095DD")
+  (doto ctx
+    (.beginPath)
+    (.arc x y 10 0 (* Math/PI 2))
+    (.fill)
+    (.closePath)))
 
-(defn hello-world []
-  [:div
-   [:h1 (:text @app-state)]
-   [:h3 "Edit this and watch it change!"]])
+(defn draw [state]
+  (let [{:keys [canvas ctx dx dy]} @state
+        width                      (.-width canvas)
+        height                     (.-height canvas)]
+    (.clearRect ctx 0 0 width height)
+    (draw-ball @state)
+    (swap! state update :x + dx)
+    (swap! state update :y + dy)))
 
 (defn start []
-  (reagent/render-component [hello-world]
-                            (. js/document (getElementById "app"))))
+  (let [canvas (.getElementById js/document "app")
+        system {:canvas canvas
+                :ctx    (.getContext canvas "2d")
+                :x      (/ (.-width canvas) 2)
+                :y      (- (.-height canvas) 30)
+                :dx     2
+                :dy     -2}]
+    (swap! app-state merge system)
+    (js/setInterval #(draw app-state) 10)))
 
 (defn ^:export init []
   ;; init is called ONCE when the page loads
