@@ -1,14 +1,9 @@
 (ns cave.core)
 
-(defonce app-state (atom {:canvas      nil
-                          :ctx         nil
-                          :x           nil
-                          :y           nil
-                          :width       nil
-                          :height      nil
-                          :dx          2
-                          :dy          -2
-                          :ball-radius 10}))
+(defonce app-state (atom {:dx          2  ;; Direction of Ball-x
+                          :dy          -2 ;; Direction of Ball-y
+                          :ball-radius 10
+                          }))
 
 (def PI (.-PI js/Math))
 
