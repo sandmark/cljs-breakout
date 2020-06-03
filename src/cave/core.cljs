@@ -29,10 +29,15 @@
     (.fill)
     (.closePath)))
 
+(defn- game-over []
+  (js/alert "GAME OVER")
+  (.reload js/document.location)
+  (js/clearInterval (:timer @app-state)))
+
 (defn- bound []
-  (let [{:keys [x dx width ball-radius
-                y dy height]} @app-state
-        toggle                #(swap! app-state update % -)]
+  (let [{:keys [x dx width ball-radius y dy height
+                paddle-x paddle-width]} @app-state
+        toggle                          #(swap! app-state update % -)]
     (when (or (> (+ x dx) (- width ball-radius))
               (< (+ x dx) ball-radius))
       (toggle :dx))
@@ -41,9 +46,10 @@
       (toggle :dy))
 
     (when (> (+ y dy) (- height ball-radius))
-      (js/alert "GAME OVER")
-      (.reload js/document.location)
-      (js/clearInterval (:timer @app-state)))))
+      (if (and (> x paddle-x)
+               (< x (+ paddle-x paddle-width)))
+        (toggle :dy)
+        (game-over)))))
 
 (defn- move-ball []
   (doseq [[pos dir] [[:x :dx] [:y :dy]]]
