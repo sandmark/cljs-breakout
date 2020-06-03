@@ -5,7 +5,9 @@
    :paddle-width  75
    :dx            2  ;; Direction of Ball-x
    :dy            -2 ;; Direction of Ball-y
-   :ball-radius   10})
+   :ball-radius   10
+   :right-pressed false
+   :left-pressed  false})
 
 (defonce app-state (atom {}))
 
@@ -43,6 +45,14 @@
   (doseq [[pos dir] [[:x :dx] [:y :dy]]]
     (swap! app-state update pos + (dir @app-state))))
 
+(defn- handle-paddle []
+  (let [{:keys [right-pressed left-pressed paddle-x width paddle-width]} @app-state]
+    (cond (and right-pressed (< paddle-x (- width paddle-width)))
+          (swap! app-state update :paddle-x + 7)
+
+          (and left-pressed (pos? paddle-x))
+          (swap! app-state update :paddle-x - 7))))
+
 (defn draw []
   (let [{:keys [ctx width height]} @app-state]
     (.clearRect ctx 0 0 width height)
@@ -50,6 +60,8 @@
     (draw-paddle @app-state)
 
     (bound [:dx :dy])
+
+    (handle-paddle)
 
     (move-ball)))
 
@@ -67,12 +79,22 @@
   (let [{:keys [paddle-width]} config]
     {:paddle-x (/ (- width paddle-width) 2)}))
 
+(defn- make-key-handler [pressed?]
+  (let [update-pressed #(swap! app-state update % (constantly pressed?))]
+    (fn [e]
+      (case (.-key e)
+        ("Right" "ArrowRight") (update-pressed :right-pressed)
+        ("Left" "ArrowLeft")   (update-pressed :left-pressed)
+        nil))))
+
 (defn start []
   (let [{:keys [width height] :as canvas} (make-canvas)
         ball                              (make-ball width height)
         paddle                            (make-paddle width)]
     (reset! app-state (merge config canvas ball paddle))
-    (swap! app-state assoc :timer (js/setInterval draw 10))))
+    (swap! app-state assoc :timer (js/setInterval draw 10))
+    (.addEventListener js/document "keydown" (make-key-handler true) false)
+    (.addEventListener js/document "keyup" (make-key-handler false) false)))
 
 (defn ^:export init []
   ;; init is called ONCE when the page loads
