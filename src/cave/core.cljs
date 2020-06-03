@@ -53,19 +53,25 @@
 
     (move-ball)))
 
-(defn- canvas []
+(defn- make-canvas []
   (let [canvas (.getElementById js/document "app")]
     {:canvas canvas
      :ctx    (.getContext canvas "2d")
      :width  (.-width canvas)
      :height (.-height canvas)}))
 
+(defn- make-ball [width height]
+  {:x (/ width 2), :y (- height 30)})
+
+(defn- make-paddle [width]
+  (let [{:keys [paddle-width]} config]
+    {:paddle-x (/ (- width paddle-width) 2)}))
+
 (defn start []
-  (let [{:keys [width height] :as params} (canvas)
-        positions                         {:x        (/ width 2)
-                                           :y        (- height 30)
-                                           :paddle-x (/ (- width (:paddle-width config)) 2)}]
-    (reset! app-state (merge config params positions))
+  (let [{:keys [width height] :as canvas} (make-canvas)
+        ball                              (make-ball width height)
+        paddle                            (make-paddle width)]
+    (reset! app-state (merge config canvas ball paddle))
     (swap! app-state assoc :timer (js/setInterval draw 10))))
 
 (defn ^:export init []
