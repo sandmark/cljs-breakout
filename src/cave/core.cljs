@@ -29,17 +29,21 @@
     (.fill)
     (.closePath)))
 
-(defn- out-of-border? [ball-radius pos direction border]
-  (or (> (+ pos direction) (- border ball-radius))
-      (< (+ pos direction) ball-radius)))
+(defn- bound []
+  (let [{:keys [x dx width ball-radius
+                y dy height]} @app-state
+        toggle                #(swap! app-state update % -)]
+    (when (or (> (+ x dx) (- width ball-radius))
+              (< (+ x dx) ball-radius))
+      (toggle :dx))
 
-(let [kmap {:dx [:ball-radius :x :dx :width]
-            :dy [:ball-radius :y :dy :height]}]
-  (defn- bound [ks]
-    (doseq [k ks]
-      (let [params (map (partial get @app-state) (k kmap))]
-        (when (apply out-of-border? params)
-          (swap! app-state update k -))))))
+    (when (< (+ y dy) ball-radius)
+      (toggle :dy))
+
+    (when (> (+ y dy) (- height ball-radius))
+      (js/alert "GAME OVER")
+      (.reload js/document.location)
+      (js/clearInterval (:timer @app-state)))))
 
 (defn- move-ball []
   (doseq [[pos dir] [[:x :dx] [:y :dy]]]
@@ -59,7 +63,7 @@
     (draw-ball @app-state)
     (draw-paddle @app-state)
 
-    (bound [:dx :dy])
+    (bound)
 
     (handle-paddle)
 
