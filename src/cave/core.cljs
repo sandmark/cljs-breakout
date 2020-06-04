@@ -46,13 +46,9 @@
     (set! (.-fillStyle ctx) "#0095DD")
     (.fillText ctx (str "Life: " life) (- width 65) 20)))
 
-(defn- clear-timer []
-  (js/clearInterval (:timer @app-state)))
-
 (defn- game-over []
   (js/alert "GAME OVER")
-  (.reload js/document.location)
-  (clear-timer))
+  (.reload js/document.location))
 
 (defn- game-restart []
   (let [{:keys [width height paddle-width]} @app-state]
@@ -119,7 +115,6 @@
   (let [{:keys [score brick-row-count brick-column-count]} @app-state]
     (when (= score (* brick-row-count brick-column-count))
       (js/alert "YOU WIN, CONGRATULATIONS!")
-      (clear-timer)
       (.reload js/document.location))))
 
 (defn- detect-collision []
@@ -158,7 +153,9 @@
 
     (handle-paddle)
     (detect-collision)
-    (move-ball)))
+    (move-ball)
+
+    (js/requestAnimationFrame draw)))
 
 (defn- make-canvas []
   (let [canvas (.getElementById js/document "app")]
@@ -203,7 +200,7 @@
         paddle                            (make-paddle width)
         bricks                            (make-bricks)]
     (reset! app-state (merge config canvas ball paddle bricks))
-    (swap! app-state assoc :timer (js/setInterval draw 10))
+    (draw)
     (.addEventListener js/document "keydown" (make-key-handler true) false)
     (.addEventListener js/document "keyup" (make-key-handler false) false)
     (.addEventListener js/document "mousemove" mouse-move-handler false)))
@@ -217,5 +214,4 @@
 (defn stop []
   ;; stop is called before any code is reloaded
   ;; this is controlled by :before-load in the config
-  (js/console.log "stop")
-  (clear-timer))
+  (js/console.log "stop"))
