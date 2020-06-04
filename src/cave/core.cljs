@@ -78,16 +78,17 @@
                 brick-offset-left brick-offset-top]} @app-state]
     (doseq [c (range brick-column-count)
             r (range brick-row-count)]
-      (let [x (+ (* c (+ brick-width brick-padding)) brick-offset-left)
-            y (+ (* r (+ brick-height brick-padding)) brick-offset-top)]
-        (swap! app-state assoc-in [:bricks r c :x] x)
-        (swap! app-state assoc-in [:bricks r c :y] y)
-        (set! (.-fillStyle ctx) "#0095DD")
-        (doto ctx
-          (.beginPath)
-          (.rect x y brick-width brick-height)
-          (.fill)
-          (.closePath))))))
+      (when (= 1 (get-in @app-state [:bricks r c :status]))
+        (let [x (+ (* c (+ brick-width brick-padding)) brick-offset-left)
+              y (+ (* r (+ brick-height brick-padding)) brick-offset-top)]
+          (swap! app-state assoc-in [:bricks r c :x] x)
+          (swap! app-state assoc-in [:bricks r c :y] y)
+          (set! (.-fillStyle ctx) "#0095DD")
+          (doto ctx
+            (.beginPath)
+            (.rect x y brick-width brick-height)
+            (.fill)
+            (.closePath)))))))
 
 (defn- detect-collision []
   (let [{:keys [brick-row-count brick-column-count
@@ -95,12 +96,14 @@
                 bricks]} @app-state]
     (doseq [c (range brick-column-count)
             r (range brick-row-count)]
-      (let [{bx :x by :y} (get-in bricks [r c])]
-        (when (and (> x bx)
-                   (< x (+ bx brick-width))
-                   (> y by)
-                   (< y (+ by brick-height)))
-          (swap! app-state update :dy -))))))
+      (let [{bx :x by :y status :status} (get-in bricks [r c])]
+        (when (= status 1)
+          (when (and (> x bx)
+                     (< x (+ bx brick-width))
+                     (> y by)
+                     (< y (+ by brick-height)))
+            (swap! app-state update :dy -)
+            (swap! app-state assoc-in [:bricks r c] 0)))))))
 
 (defn draw []
   (let [{:keys [ctx width height]} @app-state]
@@ -140,7 +143,7 @@
 (defn- make-bricks []
   (let [{:keys [brick-row-count
                 brick-column-count]} config]
-    {:bricks (->> (repeat brick-column-count {:x 0, :y 0})
+    {:bricks (->> (repeat brick-column-count {:x 0, :y 0, :status 1})
                   (into [])
                   (repeat brick-row-count)
                   (into []))}))
