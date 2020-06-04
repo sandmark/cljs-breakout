@@ -20,21 +20,23 @@
 
 (def PI (.-PI js/Math))
 
-(defn draw-ball [{:keys [ctx x y ball-radius]}]
-  (set! (.-fillStyle ctx) "#0095DD")
-  (doto ctx
-    (.beginPath)
-    (.arc x y ball-radius 0 (* PI 2))
-    (.fill)
-    (.closePath)))
+(defn draw-ball []
+  (let [{:keys [ctx x y ball-radius]} @app-state]
+    (set! (.-fillStyle ctx) "#0095DD")
+    (doto ctx
+      (.beginPath)
+      (.arc x y ball-radius 0 (* PI 2))
+      (.fill)
+      (.closePath))))
 
-(defn draw-paddle [{:keys [ctx height paddle-height paddle-width paddle-x]}]
-  (set! (.-fillStyle ctx) "#0095DD")
-  (doto ctx
-    (.beginPath)
-    (.rect paddle-x (- height paddle-height) paddle-width paddle-height)
-    (.fill)
-    (.closePath)))
+(defn draw-paddle []
+  (let [{:keys [ctx height paddle-height paddle-width paddle-x]} @app-state]
+    (set! (.-fillStyle ctx) "#0095DD")
+    (doto ctx
+      (.beginPath)
+      (.rect paddle-x (- height paddle-height) paddle-width paddle-height)
+      (.fill)
+      (.closePath))))
 
 (defn- game-over []
   (js/alert "GAME OVER")
@@ -90,8 +92,8 @@
 (defn draw []
   (let [{:keys [ctx width height]} @app-state]
     (.clearRect ctx 0 0 width height)
-    (draw-ball @app-state)
-    (draw-paddle @app-state)
+    (draw-ball)
+    (draw-paddle)
     (draw-bricks)
 
     (bound)
