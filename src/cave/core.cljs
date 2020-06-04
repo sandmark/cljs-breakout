@@ -14,7 +14,8 @@
    :brick-height       20
    :brick-padding      10
    :brick-offset-top   30
-   :brick-offset-left  30})
+   :brick-offset-left  30
+   :score              0})
 
 (defonce app-state (atom {}))
 
@@ -103,7 +104,14 @@
                      (> y by)
                      (< y (+ by brick-height)))
             (swap! app-state update :dy -)
-            (swap! app-state assoc-in [:bricks r c] 0)))))))
+            (swap! app-state assoc-in [:bricks r c] 0)
+            (swap! app-state update :score inc)))))))
+
+(defn- draw-score []
+  (let [{:keys [ctx score]} @app-state]
+    (set! (.-font ctx) "16px Arial")
+    (set! (.-fillStyle ctx) "#0095DD")
+    (.fillText ctx (str "Score: " score) 8 20)))
 
 (defn draw []
   (let [{:keys [ctx width height]} @app-state]
@@ -111,6 +119,7 @@
     (draw-ball)
     (draw-paddle)
     (draw-bricks)
+    (draw-score)
 
     (bound)
 
