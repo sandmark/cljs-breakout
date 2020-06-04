@@ -1,4 +1,4 @@
-(ns cave.core)
+(ns cljs-breakout.core)
 
 (def config
   {:paddle-height      10

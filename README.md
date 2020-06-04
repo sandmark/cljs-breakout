@@ -1,4 +1,4 @@
-# Cave
+# A simple 2D Breakout game written in ClojureScript
 
 ## Run
 
