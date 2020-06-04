@@ -91,6 +91,14 @@
             (.fill)
             (.closePath)))))))
 
+(defn- detect-game-win []
+  (let [{:keys [score brick-row-count brick-column-count
+                timer]} @app-state]
+    (when (= score (* brick-row-count brick-column-count))
+      (js/alert "YOU WIN, CONGRATULATIONS!")
+      (js/clearInterval timer)
+      (.reload js/document.location))))
+
 (defn- detect-collision []
   (let [{:keys [brick-row-count brick-column-count
                 brick-width brick-height x y
@@ -105,7 +113,8 @@
                      (< y (+ by brick-height)))
             (swap! app-state update :dy -)
             (swap! app-state assoc-in [:bricks r c] 0)
-            (swap! app-state update :score inc)))))))
+            (swap! app-state update :score inc)
+            (detect-game-win)))))))
 
 (defn- draw-score []
   (let [{:keys [ctx score]} @app-state]
