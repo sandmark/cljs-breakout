@@ -160,6 +160,13 @@
         ("Left" "ArrowLeft")   (update-pressed :left-pressed)
         nil))))
 
+(defn- mouse-move-handler [e]
+  (let [{:keys [canvas width paddle-width]} @app-state
+        relative-x                          (- (.-clientX e) (.-offsetLeft canvas))]
+    (when (and (pos? relative-x)
+               (< relative-x width))
+      (swap! app-state assoc :paddle-x (- relative-x (/ paddle-width 2))))))
+
 (defn- make-bricks []
   (let [{:keys [brick-row-count
                 brick-column-count]} config]
@@ -176,7 +183,8 @@
     (reset! app-state (merge config canvas ball paddle bricks))
     (swap! app-state assoc :timer (js/setInterval draw 10))
     (.addEventListener js/document "keydown" (make-key-handler true) false)
-    (.addEventListener js/document "keyup" (make-key-handler false) false)))
+    (.addEventListener js/document "keyup" (make-key-handler false) false)
+    (.addEventListener js/document "mousemove" mouse-move-handler false)))
 
 (defn ^:export init []
   ;; init is called ONCE when the page loads
