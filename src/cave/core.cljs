@@ -1,13 +1,20 @@
 (ns cave.core)
 
 (def config
-  {:paddle-height 10
-   :paddle-width  75
-   :dx            2  ;; Direction of Ball-x
-   :dy            -2 ;; Direction of Ball-y
-   :ball-radius   10
-   :right-pressed false
-   :left-pressed  false})
+  {:paddle-height      10
+   :paddle-width       75
+   :dx                 2  ;; Direction of Ball-x
+   :dy                 -2 ;; Direction of Ball-y
+   :ball-radius        10
+   :right-pressed      false
+   :left-pressed       false
+   :brick-row-count    3
+   :brick-column-count 5
+   :brick-width        75
+   :brick-height       20
+   :brick-padding      10
+   :brick-offset-top   30
+   :brick-offset-left  30})
 
 (defonce app-state (atom {}))
 
@@ -63,11 +70,29 @@
           (and left-pressed (pos? paddle-x))
           (swap! app-state update :paddle-x - 7))))
 
+(defn draw-bricks []
+  (let [{:keys [ctx brick-column-count brick-row-count
+                brick-padding brick-width brick-height
+                brick-offset-left brick-offset-top]} @app-state]
+    (doseq [c (range brick-column-count)
+            r (range brick-row-count)]
+      (let [x (+ (* c (+ brick-width brick-padding)) brick-offset-left)
+            y (+ (* r (+ brick-height brick-padding)) brick-offset-top)]
+        (swap! app-state assoc-in [:bricks r c :x] x)
+        (swap! app-state assoc-in [:bricks r c :y] y)
+        (set! (.-fillStyle ctx) "#0095DD")
+        (doto ctx
+          (.beginPath)
+          (.rect x y brick-width brick-height)
+          (.fill)
+          (.closePath))))))
+
 (defn draw []
   (let [{:keys [ctx width height]} @app-state]
     (.clearRect ctx 0 0 width height)
     (draw-ball @app-state)
     (draw-paddle @app-state)
+    (draw-bricks)
 
     (bound)
 
@@ -97,11 +122,20 @@
         ("Left" "ArrowLeft")   (update-pressed :left-pressed)
         nil))))
 
+(defn- make-bricks []
+  (let [{:keys [brick-row-count
+                brick-column-count]} config]
+    {:bricks (->> (repeat brick-column-count {:x 0, :y 0})
+                  (into [])
+                  (repeat brick-row-count)
+                  (into []))}))
+
 (defn start []
   (let [{:keys [width height] :as canvas} (make-canvas)
         ball                              (make-ball width height)
-        paddle                            (make-paddle width)]
-    (reset! app-state (merge config canvas ball paddle))
+        paddle                            (make-paddle width)
+        bricks                            (make-bricks)]
+    (reset! app-state (merge config canvas ball paddle bricks))
     (swap! app-state assoc :timer (js/setInterval draw 10))
     (.addEventListener js/document "keydown" (make-key-handler true) false)
     (.addEventListener js/document "keyup" (make-key-handler false) false)))
