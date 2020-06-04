@@ -39,10 +39,13 @@
       (.fill)
       (.closePath))))
 
+(defn clear-timer []
+  (js/clearInterval (:timer @app-state)))
+
 (defn- game-over []
   (js/alert "GAME OVER")
   (.reload js/document.location)
-  (js/clearInterval (:timer @app-state)))
+  (clear-timer))
 
 (defn- bound []
   (let [{:keys [x dx width ball-radius y dy height
@@ -92,11 +95,10 @@
             (.closePath)))))))
 
 (defn- detect-game-win []
-  (let [{:keys [score brick-row-count brick-column-count
-                timer]} @app-state]
+  (let [{:keys [score brick-row-count brick-column-count]} @app-state]
     (when (= score (* brick-row-count brick-column-count))
       (js/alert "YOU WIN, CONGRATULATIONS!")
-      (js/clearInterval timer)
+      (clear-timer)
       (.reload js/document.location))))
 
 (defn- detect-collision []
@@ -186,4 +188,4 @@
   ;; stop is called before any code is reloaded
   ;; this is controlled by :before-load in the config
   (js/console.log "stop")
-  (js/clearInterval (:timer @app-state)))
+  (clear-timer))
