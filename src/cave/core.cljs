@@ -15,7 +15,8 @@
    :brick-padding      10
    :brick-offset-top   30
    :brick-offset-left  30
-   :score              0})
+   :score              0
+   :life               3})
 
 (defonce app-state (atom {}))
 
@@ -39,6 +40,12 @@
       (.fill)
       (.closePath))))
 
+(defn- draw-life []
+  (let [{:keys [ctx width life]} @app-state]
+    (set! (.-font ctx) "16px Arial")
+    (set! (.-fillStyle ctx) "#0095DD")
+    (.fillText ctx (str "Life: " life) (- width 65) 20)))
+
 (defn- clear-timer []
   (js/clearInterval (:timer @app-state)))
 
@@ -46,6 +53,20 @@
   (js/alert "GAME OVER")
   (.reload js/document.location)
   (clear-timer))
+
+(defn- game-restart []
+  (let [{:keys [width height paddle-width]} @app-state]
+    (swap! app-state assoc :x (/ width 2))
+    (swap! app-state assoc :y (- height 30))
+    (swap! app-state assoc :dx 2)
+    (swap! app-state assoc :dy -2)
+    (swap! app-state assoc :paddle-x (/ (- width paddle-width) 2))))
+
+(defn- detect-game-over []
+  (swap! app-state update :life dec)
+  (if (zero? (:life @app-state))
+    (game-over)
+    (game-restart)))
 
 (defn- bound []
   (let [{:keys [x dx width ball-radius y dy height
@@ -62,7 +83,7 @@
       (if (and (> x paddle-x)
                (< x (+ paddle-x paddle-width)))
         (toggle :dy)
-        (game-over)))))
+        (detect-game-over)))))
 
 (defn- move-ball []
   (doseq [[pos dir] [[:x :dx] [:y :dy]]]
@@ -131,6 +152,7 @@
     (draw-paddle)
     (draw-bricks)
     (draw-score)
+    (draw-life)
 
     (bound)
 
