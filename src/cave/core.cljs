@@ -89,6 +89,19 @@
           (.fill)
           (.closePath))))))
 
+(defn- detect-collision []
+  (let [{:keys [brick-row-count brick-column-count
+                brick-width brick-height x y
+                bricks]} @app-state]
+    (doseq [c (range brick-column-count)
+            r (range brick-row-count)]
+      (let [{bx :x by :y} (get-in bricks [r c])]
+        (when (and (> x bx)
+                   (< x (+ bx brick-width))
+                   (> y by)
+                   (< y (+ by brick-height)))
+          (swap! app-state update :dy -))))))
+
 (defn draw []
   (let [{:keys [ctx width height]} @app-state]
     (.clearRect ctx 0 0 width height)
@@ -99,7 +112,7 @@
     (bound)
 
     (handle-paddle)
-
+    (detect-collision)
     (move-ball)))
 
 (defn- make-canvas []
