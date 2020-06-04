@@ -21,7 +21,7 @@
 
 (def PI (.-PI js/Math))
 
-(defn draw-ball []
+(defn- draw-ball []
   (let [{:keys [ctx x y ball-radius]} @app-state]
     (set! (.-fillStyle ctx) "#0095DD")
     (doto ctx
@@ -30,7 +30,7 @@
       (.fill)
       (.closePath))))
 
-(defn draw-paddle []
+(defn- draw-paddle []
   (let [{:keys [ctx height paddle-height paddle-width paddle-x]} @app-state]
     (set! (.-fillStyle ctx) "#0095DD")
     (doto ctx
@@ -39,7 +39,7 @@
       (.fill)
       (.closePath))))
 
-(defn clear-timer []
+(defn- clear-timer []
   (js/clearInterval (:timer @app-state)))
 
 (defn- game-over []
@@ -76,7 +76,7 @@
           (and left-pressed (pos? paddle-x))
           (swap! app-state update :paddle-x - 7))))
 
-(defn draw-bricks []
+(defn- draw-bricks []
   (let [{:keys [ctx brick-column-count brick-row-count
                 brick-padding brick-width brick-height
                 brick-offset-left brick-offset-top]} @app-state]
@@ -124,7 +124,7 @@
     (set! (.-fillStyle ctx) "#0095DD")
     (.fillText ctx (str "Score: " score) 8 20)))
 
-(defn draw []
+(defn- draw []
   (let [{:keys [ctx width height]} @app-state]
     (.clearRect ctx 0 0 width height)
     (draw-ball)
