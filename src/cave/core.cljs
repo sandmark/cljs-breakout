@@ -115,7 +115,7 @@
     {:paddle-x (/ (- width paddle-width) 2)}))
 
 (defn- make-key-handler [pressed?]
-  (let [update-pressed #(swap! app-state update % (constantly pressed?))]
+  (let [update-pressed #(swap! app-state assoc % pressed?)]
     (fn [e]
       (case (.-key e)
         ("Right" "ArrowRight") (update-pressed :right-pressed)
